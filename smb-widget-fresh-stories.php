@@ -36,101 +36,108 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
         <div class="row row--padding-wide fresh-stories">
             <div class="row container-wide">
         <?php
+
 		if ( $query->found_posts > $instance['number_of_posts'] ) {
-			
-			while ( $query->have_posts() ) : $query->the_post();
-			 	$do_not_duplicate = $post->ID;
-			 	$content = get_the_content();
+			if ( $query->have_posts()) {
+				while ($query->have_posts()) {
+					$query->the_post();
 				?>
-				<!-- freshest stories -->
+					<!-- freshest stories -->
 			
-						<div class="col-wide <?php echo esc_attr( $instance['outer_container_classes'] ); ?>">'
-								<h2 class="fresh-stories__heading">
-									<a href="<?php the_permalink(); ?>"><?php esc_attr( get_the_title() ); ?></a>
-								</h2>
-								<p>
-									<a href="<?php the_permalink(); ?>"><img src="<?php bloginfo('template_url') ?>/img/x.jpg" /></a>
-									<span>
-										<?php 
-											
-											$excerpt = $this->generate_auto_excerpt( get_the_post(), $instance['excerpt_num_of_words'] );
-											
-											if ( empty( $excerpt ) ) {
-												'no exerpt available';
-											} else {
-												echo( esc_attr( $excerpt ) );
-											}
-										?>
-										<a href="<?php get_permalink(); ?>"> more </a>
-									</span>
-									<span class="fresh-stories_meta">
-										Posted on <?php esc_attr( the_time( 'F jS, Y' ) ) ?> at 
-										<?php esc_attr( the_time( 'g:i a' ) ) ?> by 
-										<?php esc_attr( the_author_posts_link() ) ?>
-									</span>
-								</p>
-							</div>
-						<?php
-					endwhile;
+					<div class="col-wide <?php echo esc_attr( $instance['outer_container_classes'] ); ?>">
+							<h2 class="fresh-stories__heading">
+								<a href="<?php the_permalink(); ?>"><?php esc_attr( get_the_title() ); ?></a>
+							</h2>
+							<p>
+								<?php
+								echo '<a href="' . the_permalink() . '"><img src="' . the_post_thumbnail('smbr_100') .'" /></a>';
+								?>
+								<span>
+									<?php 
+										
+										$excerpt = $this->generate_auto_excerpt( get_the_content(), $instance['excerpt_num_of_words'] );
+										
+										if ( empty( $excerpt ) ) {
+											'no exerpt available';
+										} else {
+											echo( esc_attr( $excerpt ) );
+										}
+									?>
+									<a href="<?php get_permalink(); ?>"> more </a>
+								</span>
+								<span class="fresh-stories_meta">
+									Posted on <?php esc_attr( the_time( 'F jS, Y' ) ) ?> at 
+									<?php esc_attr( the_time( 'g:i a' ) ) ?> by 
+									<?php esc_attr( the_author_posts_link() ) ?>
+								</span>
+							</p>
+						</div>
+				<?php
+				}
+			}
+				$do_not_duplicate = $post->ID;
+				wp_reset_postdata();
 
-					wp_reset_postdata();
+		} else {
+			$fresh_post_args = array (
+				'showposts' => $instance['number_of_posts'],
+				'orderby' => 'rand'
+			);
 
-					} else {
-						$fresh_post_args = array (
-							'showposts' => $instance['number_of_posts'],
-							'orderby' => 'rand'
-						);
+			$query = $this->query_posts( $fresh_post_args );
+			if ( $query->have_posts()) {
+				while ($query->have_posts()) {
+					$query->the_post();
+				 	$do_not_duplicate = $post->ID;
+				 	$excerpt = $this->generate_auto_excerpt( get_the_content(), $instance['excerpt_num_of_words'] );
+					
+                    if ( ! empty( $instance['outer_container_classes'] ) ) {
+                        echo  '<div class="col-wide ' . esc_attr( $instance['outer_container_classes'] ) . '" >'; 
+                    } else if ( 1 == $instance['number_of_posts'] ) {
+                    ?>
+                        <div class="col-wide fresh-stories__story_one">
+                    <?php 
+                    } else if( 2 == $instance['number_of_posts'] ) {
+                    ?>
+                        <div class="col-wide fresh-stories__story_two">
+                    <?php
+                    } else if( 3 == $instance['number_of_posts'] ) {
+                    ?>
+                        <div class="col-wide fresh-stories__story">
+                    <?php
+                    } 
+                    ?>
+							<h2 class="fresh-stories__heading">
+								<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+							</h2>
+							<p>
+								<?php
+								echo '<a href="' . get_the_permalink() . '"><img src="' . the_post_thumbnail('smbr_100') .'" /></a>';
+								?>
+								<span>
+								<?php 	
+									if ( empty( $excerpt ) ) {
+										'no exerpt available';
+									} else {
+										echo( $excerpt );
+									}
+								?>
+								<a href="<?php the_permalink(); ?>">more ...</a>
+								</span>
+							</p>
+							<p>
+								<span class="fresh-stories_meta">
+									Posted on <?php esc_attr( the_time( 'F jS, Y' ) ) ?> at 
+									<?php esc_attr( the_time( 'g:i a' ) ) ?> by 
+									<?php esc_attr( the_author_posts_link() ) ?>
+								</span>
+							</p>
+						</div>
+					<?php
+				}
+			}
 
-						$query = $this->query_posts( $fresh_post_args );
-
-						while ( $query->have_posts() ) : $query->the_post();
-						 	$do_not_duplicate = $post->ID;
-						 	$excerpt = $this->generate_auto_excerpt( get_the_content(), $instance['excerpt_num_of_words'] );
-							
-                            if ( ! empty( $instance['outer_container_classes'] ) ) {
-                                echo  '<div class="col-wide ' . esc_attr( $instance['outer_container_classes'] ) . '" >'; 
-                            } else if ( 1 == $instance['number_of_posts'] ) {
-                            ?>
-                                <div class="col-wide fresh-stories__story_one">
-                            <?php 
-                            } else if( 2 == $instance['number_of_posts'] ) {
-                            ?>
-                                <div class="col-wide fresh-stories__story_two">
-                            <?php
-                            } else if( 1 == $instance['number_of_posts'] ) {
-                            ?>
-                                 <div class="col-wide fresh-stories__story">
-                            <?php
-                            } 
-                            ?>
-									<h2 class="fresh-stories__heading">
-										<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-									</h2>
-									<p>
-										<a href="<?php the_permalink(); ?>"><img src="<?php the_post_thumbnail( 'thumbnail' ) ?>" /></a>
-										<span>
-										<?php 	
-											if ( empty( $excerpt ) ) {
-												'no exerpt available';
-											} else {
-												echo( $excerpt );
-											}
-										?>
-										<a href="<?php the_permalink(); ?>">more ...</a>
-										</span>
-									</p>
-									<p>
-										<span class="fresh-stories_meta">
-											Posted on <?php esc_attr( the_time( 'F jS, Y' ) ) ?> at 
-											<?php esc_attr( the_time( 'g:i a' ) ) ?> by 
-											<?php esc_attr( the_author_posts_link() ) ?>
-										</span>
-									</p>
-								</div>
-							<?php
-						endwhile;
-
-						wp_reset_postdata();
+			wp_reset_postdata();
 			?>
 				</div>
             </div>
@@ -141,7 +148,6 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 			}
 		}
 	}
-
 	// Widget Backend
 	public function form( $instance ) {
 	?>
@@ -185,6 +191,10 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
             : $instance['number_of_posts'] = 3
         );
 
+        if ( $instance['number_of_posts'] > 3 ) {
+        	$instance['number_of_posts'] = 3;
+        }
+
         ( isset( $new_instance['excerpt_num_of_words'] ) 
             ? $instance['excerpt_num_of_words'] = (int) $new_instance['excerpt_num_of_words']
             : $instance['excerpt_num_of_words'] = 9 
@@ -219,7 +229,7 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 	*/
 	function days_where( $where = '' ) {
 	    // posts in the last 10 days
-	    $where .= " AND post_date > '" . date( 'Y-m-d', strtotime( '-7 days' ) ) . "'";
+	    $where .= " AND post_date > '" . date( 'Y-m-d', strtotime( '-3 days' ) ) . "'";
 	    return $where;
 	}
 

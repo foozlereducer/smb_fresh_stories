@@ -76,8 +76,17 @@ fresh stories
 	.fresh-stories__story h2 a
 	{
 		text-decoration: none;
+		font-size: 0.8em;
 		color: #666;
 	}
+
+	.fresh-stories__story p
+	{
+		text-decoration: none;
+		font-size: 0.8em;
+		color: #666;
+	}
+
 	.fresh-stories__story span a {
 		text-decoration: none;
 		color: #af0000;
