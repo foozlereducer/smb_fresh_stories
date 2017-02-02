@@ -30,7 +30,6 @@ class smb_Fresh_Posts {
 	***********************/
 	public function wp_enqueue_scripts() {
 		wp_enqueue_style( 'fresh-stories-css', $this->plugin_url . 'styles.css', '', '0.2' );
-		//wp_enqueue_script( 'postmedia_add2home_js', $this->plugin_url . 'add2home.js', '', '0.2', true );
 	}
 
 	/**********************
