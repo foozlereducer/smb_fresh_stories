@@ -26,7 +26,7 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 		
 		global $post;
 		
-		// Start of the mini-loop, specifies which category to look in and how many posts to pull//
+		// Start of the mini-loop, specifies which category to look in and how many posts to pull
 		$fresh_post_args = array (
 			'showposts' => $instance['number_of_posts']
 		);
@@ -43,14 +43,17 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 					$query->the_post();
 				?>
 					<!-- freshest stories -->
-			
+					
 					<div class="col-wide <?php echo esc_attr( $instance['outer_container_classes'] ); ?>">
 							<h2 class="fresh-stories__heading">
 								<a href="<?php the_permalink(); ?>"><?php esc_attr( get_the_title() ); ?></a>
 							</h2>
 							<p>
 								<?php
-								echo '<a href="' . the_permalink() . '"><img src="' . the_post_thumbnail('smbr_100') .'" /></a>';
+								$permalink = get_permalink();
+								$num_of_words = $instance['excerpt_num_of_words'];
+								echo "<a href='$permalink'><img src='" . the_post_thumbnail('smbr_100') . "'/></a>";
+									
 								?>
 								<span>
 									<?php 
@@ -63,7 +66,7 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 											echo( esc_attr( $excerpt ) );
 										}
 									?>
-									<a href="<?php get_permalink(); ?>"> more </a>
+									<a href="<?php echo $permalink; ?>"> more </a>
 								</span>
 								<span class="fresh-stories_meta">
 									Posted on <?php esc_attr( the_time( 'F jS, Y' ) ) ?> at 
@@ -105,14 +108,14 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
                     ?>
                         <div class="col-wide fresh-stories__story">
                     <?php
-                    } 
+					} 
                     ?>
 							<h2 class="fresh-stories__heading">
 								<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
 							</h2>
 							<p>
 								<?php
-								echo '<a href="' . get_the_permalink() . '"><img src="' . the_post_thumbnail('smbr_100') .'" /></a>';
+								echo "<a href='$permalink'><img src='" . the_post_thumbnail('smbr_100') . "'/></a>";
 								?>
 								<span>
 								<?php 	
@@ -152,6 +155,7 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 	public function form( $instance ) {
 	?>
 		<h3>Number of Posts</h3>
+		<?php if ( isset( $instance['number_of_posts'] ) ) { ?>
 		<input 
 			type='text' 
 			class='widefat smb-number-of-posts' 
@@ -160,7 +164,18 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 			value='<?php echo esc_attr( $instance['number_of_posts'] )?>' 
 			placeholder='3'
 		/>
+		<?php } else { ?>
+			<input 
+			type='text' 
+			class='widefat smb-number-of-posts' 
+			id='<?php echo esc_attr( $this->get_field_id('smb-number-of-posts') )?>' 
+			name='<?php  echo esc_attr( $this->get_field_name('number_of_posts') ); ?>'  
+			value='<?php echo 3;?>' 
+			placeholder='3'
+		/>
+		<?php } ?>
 		<h3>Number of Excerpt Words</h3>
+		<?php if ( isset(  $instance['excerpt_num_of_words'] ) ) { ?>
 		<input 
 			type='text' 
 			class='widefat smb-excerpt-num-of-words' 
@@ -169,7 +184,18 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 			value='<?php echo esc_attr( $instance['excerpt_num_of_words'] )?>' 
 			placeholder='200'
 		/>
-        <h3>Outer Container Classes </h3>
+		<?php } else { ?>
+		<input 
+			type='text' 
+			class='widefat smb-excerpt-num-of-words' 
+			id='<?php echo esc_attr( $this->get_field_id('smb-excerpt_num_of_words') )?>' 
+			name='<?php  echo esc_attr( $this->get_field_name('excerpt_num_of_words') ); ?>'  
+			value='<?php echo 40; ?>' 
+			placeholder='200'
+		/>
+		<?php } ?>
+		<h3>Outer Container Classes </h3>
+		<?php if ( isset(  $instance['outer_container_classes'] ) ) { ?>
         <input 
             type='text' 
             class='widefat smb-outer-container-classes' 
@@ -177,8 +203,17 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
             name='<?php  echo esc_attr( $this->get_field_name('outer_container_classes') ); ?>'  
             value='<?php echo esc_attr( $instance['outer_container_classes'] )?>' 
             placeholder='( optional ) my-class another-class'
-        />
-	<?php
+		/>
+		<?php } else { ?>
+		 <input 
+            type='text' 
+            class='widefat smb-outer-container-classes' 
+            id='<?php echo esc_attr( $this->get_field_id('smb-outer-container-classes') )?>' 
+            name='<?php  echo esc_attr( $this->get_field_name('outer_container_classes') ); ?>'  
+            value='<?php echo "fresh-stories__story"?>' 
+            placeholder='( optional ) my-class another-class'
+		/>
+		<?php }	
 	}
 
 	// update
@@ -209,9 +244,12 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
      return $instance;
 	}
 
-/**********************
-	post query
-	***********************/
+	/**
+	 * Qurey Posts
+	 * @param $args array ~ things like 'show_posts', 'number_of_posts'  and 'orderby'
+	 * @param $is_where boolean ~ defines if the query is or is not a where query
+	 * @param $where_filter_name ~ defines filters for where like 'days_where'
+	 */
 	function query_posts( $args, $is_where = false, $where_filter_name = '' ) {
 
 		if ( empty( $is_where ) ) {
@@ -236,16 +274,8 @@ class smb_Widget_Fresh_Stories extends WP_Widget {
 	/**********************
 	generate auto excerpt
 	***********************/
-	function generate_auto_excerpt( $content, $num_of_words ) {
-		
-		$words = explode( ' ', $content );
-		$excerpt = '';
-
-		for ( $i = 0; $i <= $num_of_words; $i++ ) {
-			$excerpt .= $words[ $i ] . " ";
-		}
-
-		return $excerpt;
+	function generate_auto_excerpt( $content, $num_of_words ) {	
+		return implode(' ', array_slice( str_word_count( $content,1 ), 0, $num_of_words ) );
 	}
 }
 
